@@ -167,11 +167,12 @@ public class CustomerMapper {
             statement = connection.prepareStatement(sql);
             statement.setString(1, username);
             resultSet = statement.executeQuery();
+            System.out.println(resultSet);
 
             if (resultSet.next()) {
                 String storedPassword = resultSet.getString("password");
                 if (storedPassword.equals(password)) {
-                    return 1; // login success
+                    return resultSet.getInt("id"); // login success
                 } else {
                     return 0; // incorrect password
                 }
@@ -184,5 +185,32 @@ public class CustomerMapper {
             JDBCUtil.release(connection, statement, resultSet);
         }
     }
+
+    public Customer findById(int id) {
+        Connection connection = JDBCUtil.getConnection();
+        String sql = "select * from customer where id = ?";
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        Customer customer = null;
+        try {
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, id);
+            resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                int customerId = resultSet.getInt("id");
+                String username = resultSet.getString("username");
+                String password = resultSet.getString("password");
+                String name = resultSet.getString("name");
+                String telephone = resultSet.getString("telephone");
+                customer = new Customer(customerId, username, password, name, telephone);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtil.release(connection, statement, resultSet);
+        }
+        return customer;
+    }
+
 
 }
