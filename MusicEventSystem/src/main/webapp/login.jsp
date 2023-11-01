@@ -12,6 +12,11 @@
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="css/style.css">
+    <script type="text/javascript">
+        if (window.top !== window.self) { 
+            window.top.location = window.self.location;
+        }
+    </script>
 </head>
 <body>
 <div class="container">

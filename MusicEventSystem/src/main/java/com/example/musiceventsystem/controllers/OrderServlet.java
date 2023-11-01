@@ -31,6 +31,10 @@ public class OrderServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();
         String userRole = (String) session.getAttribute("roleType");
+        if (userRole == null || userRole.trim().isEmpty()) {
+            resp.sendRedirect("/login.jsp");
+            return;
+        }
         req.setCharacterEncoding("UTF-8");
         String method = req.getParameter("method");
         Instant currentInstant = Instant.now();
@@ -41,11 +45,17 @@ public class OrderServlet extends HttpServlet {
                     resp.sendRedirect("/accessdenied.jsp");
                     return;
                 }
-                HttpSession customerSession = req.getSession();
-                Integer uid = (Integer) customerSession.getAttribute("id");
-                String suid = uid.toString();
-                req.setAttribute("list", this.orderService.search("customer_id", suid));
-                req.getRequestDispatcher("manageorder.jsp").forward(req, resp);
+                HttpSession mySession = req.getSession();
+                String role = mySession.getAttribute("roleType").toString();
+                if (role.equals("customer")) {
+                    Integer uid = (Integer) mySession.getAttribute("id");
+                    String suid = uid.toString();
+                    req.setAttribute("list", this.orderService.search("customer_id", suid));
+                    req.getRequestDispatcher("manageorder.jsp").forward(req, resp);
+                } else if (role.equals("admin")) {
+                    req.setAttribute("list", this.orderService.list());
+                    req.getRequestDispatcher("manageorder.jsp").forward(req, resp);
+                }
                 break;
             case "search":
                 if (!authorization.checkPermission(userRole, "order search")) {

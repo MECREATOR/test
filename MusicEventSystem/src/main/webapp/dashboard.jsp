@@ -35,7 +35,7 @@
         <span style="color: #CCCCCC;font-size: 26px;position: relative;top: 5px;"></span>
         <ul class="nav navbar-nav navbar-right">
             <li>
-                <a>Welcome! ${id}</a>
+                <a>Welcome! ${username}</a>
             </li>
             <li>
                 <a href="/account?method=logout">Logout</a>
@@ -62,6 +62,16 @@
                         <span class="" aria-hidden="true">
                             <i class="fa fa-user-circle-o fa-fw"></i>
                         </span> Planner
+                    </a>
+                    <a href="javascript:void(0)" class="list-group-item" onclick="change('/event?method=list',3)">
+                        <span class="" aria-hidden="true">
+                            <i class="fa fa-bookmark fa-fw"></i>
+                        </span> Event
+                    </a>
+                    <a href="javascript:void(0)" class="list-group-item" onclick="change('/order?method=list',4)">
+                        <span class="" aria-hidden="true">
+                            <i class="fa fa-address-card-o fa-fw"></i>
+                        </span> Order
                     </a>
                 </c:when>
                 <c:when test="${roleType eq 'planner'}">
@@ -92,7 +102,7 @@
             </c:choose>
         </div>
         <!--right content-->
-        <iframe style="width: 81%; height: 800px; border: 0px;" src="/venue?method=list"></iframe>
+        <iframe style="width: 81%; height: 800px; border: 0px;" src="/home.jsp"></iframe>
     </div>
 </div>
 <div class="footer">

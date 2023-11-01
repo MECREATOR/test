@@ -14,7 +14,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
+
+import static org.apache.taglibs.standard.functions.Functions.length;
 
 @WebServlet("/event")
 public class EventServlet extends HttpServlet {
@@ -32,6 +35,10 @@ public class EventServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();
         String userRole = (String) session.getAttribute("roleType");
+        if (userRole == null || userRole.trim().isEmpty()) {
+            resp.sendRedirect("/login.jsp");
+            return;
+        }
         req.setCharacterEncoding("UTF-8");
         String method = req.getParameter("method");
 
@@ -41,10 +48,24 @@ public class EventServlet extends HttpServlet {
                     resp.sendRedirect("/accessdenied.jsp");
                     return;
                 }
-                List<Event> eventList = eventService.list();
-                req.setAttribute("list", eventList);
                 req.setAttribute("venueList", venueService.list());
                 req.setAttribute("plannerList", plannerService.list());
+                List<Event> eventList = eventService.list();
+                HttpSession mySession = req.getSession();
+                String role = mySession.getAttribute("roleType").toString();
+                if (role.equals("planner")) {
+                    Integer uid = (Integer) mySession.getAttribute("id");
+                    List<Integer> es = eventService.getEventIdsByPlannerId(uid);
+                    Iterator<Event> itEve = eventList.iterator();
+                    while (itEve.hasNext()) {
+                        Event e = itEve.next();
+                        if (!es.contains(e.getId())) {
+                            itEve.remove();
+                        }
+                    }
+                }
+                req.setAttribute("list", eventList);
+
                 req.getRequestDispatcher("manageevent.jsp").forward(req, resp);
                 break;
             case "search":
@@ -87,13 +108,48 @@ public class EventServlet extends HttpServlet {
                 resp.sendRedirect("/event?method=list");
                 break;
 
-            case "delete":
-                if (!authorization.checkPermission(userRole, "event delete")) {
+            case "update":
+                if (!authorization.checkPermission(userRole, "event save")) {
                     resp.sendRedirect("/accessdenied.jsp");
                     return;
                 }
                 String idStr = req.getParameter("id");
                 Integer id = Integer.parseInt(idStr);
+                plannerIdStr = req.getParameter("planner");
+                plannerId = Integer.parseInt(plannerIdStr);
+
+                name = req.getParameter("name");
+                venueIdStr = req.getParameter("venue");
+                venueId = Integer.parseInt(venueIdStr);
+                date = req.getParameter("date");
+                stapStr = req.getParameter("stap");
+                stap = Integer.parseInt(stapStr);
+                mospStr = req.getParameter("mosp");
+                mosp = Integer.parseInt(mospStr);
+                seapStr = req.getParameter("seap");
+                seap = Integer.parseInt(seapStr);
+                vippStr = req.getParameter("vipp");
+                vipp = Integer.parseInt(vippStr);
+                othpStr = req.getParameter("othp");
+                othp = Integer.parseInt(othpStr);
+                String versionStr = req.getParameter("version");
+                Integer version = Integer.parseInt(versionStr);
+
+                Integer res = eventService.update(new Event(id, name, venueId, date, stap, mosp, seap, vipp, othp, version), plannerId);
+                if (res == 0) {
+                    resp.sendRedirect("/operationfailure.jsp");
+                } else if (res == 1) {
+                    resp.sendRedirect("/event?method=list");
+                }
+                break;
+
+            case "delete":
+                if (!authorization.checkPermission(userRole, "event delete")) {
+                    resp.sendRedirect("/accessdenied.jsp");
+                    return;
+                }
+                idStr = req.getParameter("id");
+                id = Integer.parseInt(idStr);
                 eventService.delete(id);
                 resp.sendRedirect("/event?method=list");
                 break;
